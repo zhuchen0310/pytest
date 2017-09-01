@@ -1,0 +1,84 @@
+{% extends 'base_detail_list.html' %}
+{% load staticfiles %}
+{% block title %}天天生鲜-商品列表{% endblock title %}
+{% block topfiles %}
+{#    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>#}
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script>
+    $(function () {
+        var goods_str = '';
+        $('.goods_type_list').children('li').each(function () {
+            goods_id = $(this).attr('goods_id');
+            goods_str += goods_id+',';
+
+        });
+        var goods_id_list = goods_str.substring(0,goods_str.length-1);  //[1,2]
+        // ajax请求讲goods_id 发送到视图
+        $.get('/get_image_list/?goods_id_list='+goods_id_list,function (data) {
+            image_dic = data.image_dic;
+            $('.goods_type_list').children('li').each(function () {
+                goods_id = $(this).attr('goods_id');
+                $(this).find('img').prop('src','/static/'+image_dic[goods_id]);
+            })
+        })
+    })
+
+{#    $(function () {#}
+{#        var goods_str = '';#}
+{#        $('.goods_type_list').children('li').each(function () {#}
+{#            goods_id = $(this).attr('goods_id');#}
+{#            goods_str += goods_id + ',';#}
+{##}
+{#        });#}
+{#        $.get('/get_image_list/?goods_str='+goods_str,function (data) {#}
+{#            var image_dic = data.image_dic;#}
+{#            $('.goods_type_list').children('li').each(function () {#}
+{#                goods_id = $(this).attr('goods_id');#}
+{#                $(this).find('img').prop('src','/static/'+image_dic[goods_id])#}
+{#            })#}
+{#        })#}
+{#    })#}
+    </script>
+{% endblock topfiles %}
+{% block main_content %}
+	<div class="breadcrumb">
+		<a href="#">{{ query }}</a>
+		<span>></span>
+		<a href="/lists/{{ goods_type_id }}/1/">搜索结果</a>
+	</div>
+
+	<div class="main_wrap clearfix">
+
+
+			<ul class="goods_type_list clearfix">
+                {% for goods in page %}
+				<li goods_id="{{ goods.object.id }}">
+					<a href="/goods/{{ goods.id }}/"><img src="{% static goods.img_url %}"></a>
+					<h4><a href="/goods/{{ goods.id }}/">{{ goods.object.goods_name }}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{ goods.object.goods_price }}</span>
+						<span class="unit">{{ goods.object.goods_price }}/{{ goods.object.goods_unite }}</span>
+						<a href="#" class="add_goods" title="加入购物车"></a>
+					</div>
+				</li>
+                {% endfor %}
+			</ul>
+
+			<div class="pagenation">
+                {% if page.has_previous %}
+				    <a href="/search/?q={{ query }}&page={{ page.number|add:-1 }}">&lt;上一页</a>
+                {% endif %}
+                {% for pindex in paginator.page_range %}
+                    {% if pindex == page.number  %}
+				        <a href="/search/?q={{ query }}&page={{ pindex }}" class="active">{{ pindex }}</a>
+                    {% else %}
+                        <a href="/search/?q={{ query }}&page={{ pindex }}">{{ pindex }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if page.has_next %}
+				    <a href="/search/?q={{ query }}&page={{ page.number|add:1 }}">下一页&gt;</a>
+                {% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock main_content %}
