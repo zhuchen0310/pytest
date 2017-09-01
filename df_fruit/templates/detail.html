@@ -1,6 +1,27 @@
 {% extends 'base_detail_list.html' %}
 {% load staticfiles %}
 {% block title %}天天生鲜-商品详情{% endblock title %}
+{% block topfiles %}
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script>
+    $(function () {
+        $('.add').click(function () {
+            var number = parseInt($('.num_show').val());
+            number += 1;
+            $('.num_show').val(number)
+        });
+         $('.minus').click(function () {
+            var number = parseInt($('.num_show').val());
+            number += -1;
+            if(number<=1){
+                number = 1
+            }
+            $('.num_show').val(number)
+
+        });
+    })
+    </script>
+{% endblock topfiles %}
 {% block main_content %}
 	<div class="breadcrumb">
 		<a href="#">全部分类</a>
