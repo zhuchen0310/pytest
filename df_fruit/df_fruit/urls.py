@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^user/',include('df_user.urls')), # 用户页面
     url(r'^',include('df_goods.urls')), # 商品页面
     url(r'^search/', include('haystack.urls')), #商品索引
+    url(r'^cart/', include('df_cart.urls')),  # 购物车页面
 ]

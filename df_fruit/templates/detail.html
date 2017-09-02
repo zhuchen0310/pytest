@@ -5,20 +5,44 @@
     <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
     <script>
     $(function () {
+        get_total()
+        // 点击+号
         $('.add').click(function () {
             var number = parseInt($('.num_show').val());
             number += 1;
-            $('.num_show').val(number)
+            $('.num_show').val(number);
+            get_total()
         });
+        //点击-号 最小1
          $('.minus').click(function () {
             var number = parseInt($('.num_show').val());
             number += -1;
             if(number<=1){
                 number = 1
             }
-            $('.num_show').val(number)
+            $('.num_show').val(number);
+             get_total()
 
         });
+         // 手动输入进行验证
+         $('.num_show').blur(function () {
+             var goods_count = $('.num_show').val();
+             // 不输入或者输入非数字或者小于1 都显示1
+             if(isNaN(goods_count) || goods_count <=1 || goods_count.trim().length <=0){
+                 goods_count = 1;
+
+             }
+              $('.num_show').val(parseInt(goods_count));
+             get_total()
+         });
+
+
+        function get_total() {
+             var goods_count = parseInt($('.num_show').val());
+         var goods_price = parseFloat($('.show_pirze').children().text());
+         total_price = goods_price*goods_count;
+        $('.total').children().text(total_price.toFixed(2)+ '元')
+        }
     })
     </script>
 {% endblock topfiles %}
@@ -46,13 +70,13 @@
 				<div class="num_add fl">
 					<input type="text" class="num_show fl" value="1">
 					<a href="javascript:;" class="add fr">+</a>
-					<a href="javascript:;" class="minus fr">-</a>	
+					<a href="javascript:;" class="minus fr">-</a>
 				</div> 
 			</div>
 			<div class="total">总价：<em>16.80元</em></div>
 			<div class="operate_btn">
 				<a href="javascript:;" class="buy_btn">立即购买</a>
-				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>				
+				<a href="javascript:;" class="add_cart" id="add_cart" goods_id="{{ goods.id }}">加入购物车</a>
 			</div>
 		</div>
 	</div>
@@ -93,25 +117,45 @@
 	<div class="add_jump"></div>
 {% endblock bottom %}
 {% block bottomfiles %}
-	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
 	<script type="text/javascript">
 		var $add_x = $('#add_cart').offset().top;
 		var $add_y = $('#add_cart').offset().left;
+		$('#add_cart').click(function () {
+            goods_id = $(this).attr('goods_id');
+            goods_count = $('.num_show').val();
+            index = $('.login_btn').text().indexOf('登录');
+            if(index>=0){alert('请先登录')}
+            else{
+                $.get('/cart/add/?goods_count='+goods_count+'&goods_id='+goods_id,function (data) {
+                 if(data.res==0){alert('库存不足')}
+                 else{
+                     var $to_x = $('#show_count').offset().top;
+		                var $to_y = $('#show_count').offset().left;
 
-		var $to_x = $('#show_count').offset().top;
-		var $to_y = $('#show_count').offset().left;
+		                $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
+                     $(".add_jump").stop().animate({
+                            'left': $to_y+7,
+                            'top': $to_x+7},
+                            "fast", function() {
 
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
-		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
-				'left': $to_y+7,
-				'top': $to_x+7},
-				"fast", function() {
-					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
-					});
+                             $(".add_jump").fadeOut('fast', function () {
+                                 count = $('#show_count').text();
+                                 total_count = parseInt(count) + parseInt(goods_count);
 
-			});
-		})
+                                 $('#show_count').text(total_count);
+
+                             });
+                         })
+                 }
+                });
+            }
+        });
+
+
+
+
+
+
 	</script>
 {% endblock bottomfiles %}

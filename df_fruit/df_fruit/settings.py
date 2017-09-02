@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'djcelery',  # 注册djcelery
     'tinymce',  # 富文本编辑器
     'haystack',  # 全文检索
+    'df_cart',   # 购物车模块
 )
 
 MIDDLEWARE_CLASSES = (
