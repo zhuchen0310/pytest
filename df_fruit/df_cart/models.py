@@ -52,6 +52,15 @@ class CartManager(BaseManager):
             cart_info.save()
             return True
 
+    # 根据购物车id删除购物车信息
+    def delete_cart_by_id(self,cart_id):
+        try:
+            cart_info = self.get_one_object(id=cart_id)
+            cart_info.delete()
+            return True
+        except Exception as e:
+            return False
+
 
 
 class Cart(BaseModel):

@@ -37,49 +37,52 @@
             });
 
             //绑定 + 事件
-            $('.add').click(function () {
-               var goods_count = $(this).next().val();
-               var goods_id = $(this).next().attr('goods_id');
-               update_remote_cart_count(goods_id,parseInt(goods_count)+1);
-                if(error_update==false){
-                    // 商品数量+1
-                   goods_count = parseInt(goods_count)+ 1;
-                    // 设置购物车商品数量
+              $('.add').click(function () {
+            // 1.获取原有购物车中商品的数目
+            var goods_count = $(this).next().val();
+            // 获取商品的id
+            var goods_id = $(this).next().attr('goods_id');
+                // 2.更新数据库中s_cart表中的数据
+                update_remote_cart_count(goods_id, parseInt(goods_count)+1);
+                // 更新成功
+                if (error_update == false){
+                     // 2.数目+1
+                    goods_count = parseInt(goods_count)+1;
+                    // 3.设置购物车商品数量
                     $(this).next().val(goods_count);
-                    // 当前商品是否选中
-                    is_check = $('this').parents('ul').find(':checkbox').prop('checked');
-                    if (is_check==true){
-                       // 如果选中
+                    // 4.判断当前商品是否选中
+                    is_checked = $(this).parents('ul').find(':checkbox').prop('checked');
+                    if (is_checked==true){
                         update_all_goods_info()
                     }
-                    else{
+                    else
+                    {
                         update_goods_info($(this).parents('ul'))
                     }
                     update_cart_count()
-
                 }
 
-            });
+        })
                  // 实现商品的减少
         $('.minus').click(function () {
             // 1.获取原有购物车中商品的数目
-            goods_count = $(this).prev().val()
+            var goods_count = $(this).prev().val();
             // 获取商品的id
-            goods_id = $(this).prev().attr('goods_id')
+            var goods_id = $(this).prev().attr('goods_id');
             if (parseInt(goods_count)-1 > 0)
             {
                 // 2.更新数据库中s_cart表中的数据
-                update_remote_cart_count(goods_id, parseInt(goods_count)-1)
+                update_remote_cart_count(goods_id, parseInt(goods_count)-1);
 
                 // 更新成功
                 if (error_update == false){
                      // 2.数目-1
-                    goods_count = parseInt(goods_count)-1
+                    goods_count = parseInt(goods_count)-1;
                     // 3.设置购物车商品数量
-                    $(this).prev().val(goods_count)
+                    $(this).prev().val(goods_count);
                     // 4.判断当前商品是否选中
-                    is_checked = $(this).parents('ul').find(':checkbox').prop('checked')
-                    if (is_checked == true){
+                    is_checked = $(this).parents('ul').find(':checkbox').prop('checked');
+                    if (is_checked==true){
                         update_all_goods_info()
                     }
                     else
@@ -91,6 +94,37 @@
             }
         })
 
+
+
+
+            // 删除商品
+            error_delete = false
+            $('.cart_list_td').children('.col08').children('a').click(function () {
+                var cart_id = $(this).attr('cart_id');
+                var goods_ul = $(this).parents('ul')
+                $.ajax({
+                'url': '/cart/delete/?cart_id='+cart_id,
+                'async': false,
+                'success': function (date) {
+                    if (date.res == 1) {
+                        error_update = false
+                    }
+                    else {
+                        error_update = true
+                    }
+                }
+            })
+
+            if(error_delete == false){
+                goods_ul.remove()
+                is_checked = goods_ul.find(':checkbox').prop('checked')
+                if(is_checked){
+                    update_all_goods_info()
+                }
+                update_cart_count()
+            }
+
+            })
 
 
 
@@ -185,7 +219,7 @@
 			</div>
 		</li>
 		<li class="col07">25.80元</li>
-		<li class="col08"><a href="javascript:;">删除</a></li>
+		<li class="col08"><a href="javascript:;" cart_id="{{ cart_info.id }}">删除</a></li>
 	</ul>
 	{% endfor %}
 
