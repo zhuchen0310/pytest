@@ -54,6 +54,8 @@ def car_count_update(request):
         return JsonResponse({'res':1})
     return JsonResponse({'res':0})
 
+# 删除购物车信息
+@login_requied
 def delete_cart_info(request):
     cart_id = request.GET.get('cart_id')
     delete_info = Cart.objects.delete_cart_by_id(cart_id=cart_id)
@@ -61,3 +63,4 @@ def delete_cart_info(request):
         return JsonResponse({'res':1})
     else:
         return JsonResponse({'res':0})
+

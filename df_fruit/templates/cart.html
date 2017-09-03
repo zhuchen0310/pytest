@@ -1,5 +1,7 @@
 {% extends 'base_no_cart_show.html' %}
 {% load staticfiles %}
+{% load staticfiles %}
+
 {% block title %}天天生鲜-购物车{% endblock title %}
 {% block page_title %}购物车{% endblock page_title %}
 {% block topfiles %}
@@ -93,6 +95,48 @@
                 }
             }
         })
+            // 手工输入
+            var goods_start_count = $('.num_show').val()
+            $('.num_show').blur(function () {
+                var goods_id = $(this).attr('goods_id');
+
+                var goods_count = $(this).val();
+                goods_count = parseInt(goods_count);
+                if(isNaN(goods_count)||goods_count<=0||goods_count.length<=0){
+
+                    $(this).val(goods_start_count)
+                }
+                else{
+
+                    //更新数据库
+                update_remote_cart_count(goods_id,goods_count);
+                    //更新成功
+                    if(error_update==false){
+                        is_checked = $(this).parents('ul').find(':checkbox').prop('checked');
+                        // 如果是选中的
+                        if(is_checked==true){
+                            update_all_goods_info();
+
+
+                            }
+                            //不是选中的
+                        else{
+                            update_goods_info($(this).parents('ul'))
+
+                        }
+                        // 刷新购物车数量
+                        update_cart_count()
+
+                    }
+                    // 更新失败恢复原数据
+                    else{
+                        $(this).val(goods_start_count);
+                    }
+
+
+                    }
+
+            });
 
 
 
@@ -204,6 +248,7 @@
 		<li class="col05">小计</li>
 		<li class="col06">操作</li>
 	</ul>
+    <form action="/order/" method="post">
     {% for cart_info in cart_list %}
 	<ul class="cart_list_td clearfix">
 		<li class="col01"><input type="checkbox" name="" checked></li>
@@ -227,6 +272,7 @@
 		<li class="col01"><input type="checkbox" name="" checked=""></li>
 		<li class="col02">全选</li>
 		<li class="col03">合计(不含运费)：<span>¥</span><em>42.60</em><br>共计<b>2</b>件商品</li>
-		<li class="col04"><a href="place_order.html">去结算</a></li>
+		<li class="col04"><input type="submit" value="去结算"></li>
 	</ul>
+    </form>
 {% endblock body %}
