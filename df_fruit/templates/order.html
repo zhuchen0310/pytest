@@ -1,6 +1,38 @@
 {% extends 'base.html' %}
+
 {% load staticfiles %}
 	{% block title %}天天生鲜-提交订单{% endblock title %}
+{% block topfiles %}
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script>
+    $(function () {
+        //记录商品数量和总价格
+        var goods_total_count = 0;
+        var goods_total_sprice= 0;
+        $('.goods_list_td').each(function () {
+            //取出每个商品的数量
+            var goods_count = $(this).find('.col06').text();
+            var goods_count = parseInt(goods_count);
+            //取出每个商品的价格
+            var goods_price = $(this).children('.col05').text();
+            var goods_price = parseFloat(goods_price);
+            //计算小计并设置
+            var total_price = goods_price*goods_count;
+            $(this).find('.col07').text(total_price.toFixed(2)+'元');
+            goods_total_count += goods_count;
+            goods_total_sprice += total_price;
+        });
+        //设置下方总金额
+        $('.total_goods_count').find('b').text(goods_total_sprice);
+        //设置总件数
+        $('.total_goods_count').find('em').text(goods_total_count);
+        var order_total_sprice = goods_total_sprice+10;
+        //设置订单价格
+        $('.total_pay').find('b').text(order_total_sprice.toFixed(2)+'元');
+
+    })
+    </script>
+{% endblock topfiles %}
 {% block search_bar %}
 	<div class="search_bar clearfix">
 		<a href="/" class="logo fl"><img src="{% static 'images/logo.png' %}"></a>
@@ -19,22 +51,26 @@
 	<div class="common_list_con clearfix">
 		<dl>
 			<dt>寄送到：</dt>
-			<dd><input type="radio" name="" checked="">北京市 海淀区 东北旺西路8号中关村软件园 （李思 收） 182****7528</dd>
-		</dl>
+            {% if addr %}
+			    <dd><input type="radio" name="addr_id" value="{{ addr.id }}" checked="">{{ addr.recipient_addr }} （{{ addr.recipient_name }} 收） {{ addr.recipient_phone }}</dd>
+		    {% else %}
+                <dd>无</dd>
+            {% endif %}
+        </dl>
 		<a href="user_center_site.html" class="edit_site">编辑收货地址</a>
 
 	</div>
-	
+
 	<h3 class="common_title">支付方式</h3>	
 	<div class="common_list_con clearfix">
 		<div class="pay_style_con clearfix">
-			<input type="radio" name="pay_style" checked>
-			<label class="cash">货到付款</label>
-			<input type="radio" name="pay_style">
+			<input type="radio" name="pay_style" checked value="1">
+			<label class="cash" >货到付款</label>
+			<input type="radio" name="pay_style" value="2">
 			<label class="weixin">微信支付</label>
-			<input type="radio" name="pay_style">
+			<input type="radio" name="pay_style" value="3">
 			<label class="zhifubao"></label>
-			<input type="radio" name="pay_style">
+			<input type="radio" name="pay_style" value="4">
 			<label class="bank">银行卡支付</label>
 		</div>
 	</div>
@@ -49,15 +85,17 @@
 			<li class="col04">数量</li>
 			<li class="col05">小计</li>		
 		</ul>
+        {% for goods_info in cart_list %}
 		<ul class="goods_list_td clearfix">
-			<li class="col01">1</li>			
-			<li class="col02"><img src="images/goods/goods012.jpg"></li>
-			<li class="col03">奇异果</li>
-			<li class="col04">500g</li>
-			<li class="col05">25.80元</li>
-			<li class="col06">1</li>
-			<li class="col07">25.80元</li>	
+			<li class="col01">{{ forloop.counter }}</li>
+			<li class="col02"><img src="/static/{{ goods_info.goods.img_url }}"></li>
+			<li class="col03">{{ goods_info.goods.goods_name }}</li>
+			<li class="col04">{{ goods_info.goods.goods_unite }}</li>
+			<li class="col05">{{ goods_info.goods.goods_price }}元</li>
+			<li class="col06">{{ goods_info.goods_count }}</li>
+			<li class="col07">20元</li>
 		</ul>
+    {% endfor %}
 
 	</div>
 
@@ -72,7 +110,8 @@
 	</div>
 
 	<div class="order_submit clearfix">
-		<a href="javascript:;" id="order_btn">提交订单</a>
+    {% csrf_token %}
+		<a href="javascript:;" cart_id_list="{{ cart_id_list }}" id="order_btn" >提交订单</a>
 	</div>	
 {% endblock body %}
 	{% block cart_count %}
@@ -87,20 +126,58 @@
     {% endblock cart_count %}
  {# 网页底部引入文件块 #}
 	{% block bottomfiles %}
-	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
 	<script type="text/javascript">
 		$('#order_btn').click(function() {
-			localStorage.setItem('order_finish',2);
+		    //购物车信息列表
+			var cart_id_list = $(this).attr('cart_id_list');
+			//收货地址
+			var addr_id = $('input[name="addr_id"]').val();
+			//支付方式
+            var pay_method = $('.pay_style_con').find(':checked').val();
+            prams = {
+                'cart_id_list':cart_id_list,
+                'addr_id':addr_id,
+                'pay_method':pay_method
+            };
+            $.post('/order/commit/',prams,function (data) {
+                if(data.res==0){
+                    alert('库存不足!')
+
+            }
+                else if(data.res==-1){
+                    alert('服务器异常!')
+                }
+
+                else{
+                    localStorage.setItem('order_finish',2);
 
 			$('.popup_con').fadeIn('fast', function() {
 
 				setTimeout(function(){
 					$('.popup_con').fadeOut('fast',function(){
-						window.location.href = 'index.html';
-					});	
+						window.location.href = '/user/order/';
+					});
+				},3000)
+
+			});
+                }
+
+
+            })
+
+            /*
+		    localStorage.setItem('order_finish',2);
+
+			$('.popup_con').fadeIn('fast', function() {
+
+				setTimeout(function(){
+					$('.popup_con').fadeOut('fast',function(){
+						window.location.href = '/user/order/';
+					});
 				},3000)
 				
-			});
+			});*/
 		});
 	</script>
 {% endblock bottomfiles %}

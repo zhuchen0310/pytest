@@ -251,7 +251,7 @@
     <form action="/order/" method="post">
     {% for cart_info in cart_list %}
 	<ul class="cart_list_td clearfix">
-		<li class="col01"><input type="checkbox" name="" checked></li>
+		<li class="col01"><input type="checkbox" name="cart_id_list" value="{{ cart_info.id }}" checked></li>
 		<li class="col02"><img src="{% static cart_info.goods.img_url %}"></li>
 		<li class="col03">{{ cart_info.goods.goods_name }}<br><em>{{ cart_info.goods.goods_price }}/{{ cart_info.goods.goods_unite }}</em></li>
 		<li class="col04">{{ cart_info.goods.goods_unite }}</li>

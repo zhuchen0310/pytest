@@ -8,6 +8,7 @@ from utils.get_hash import get_hash
 from utils.decorators import login_requied
 from df_goods.views import URL_LIST
 from df_goods.models import Goods
+from df_order.models import OrderDetail,OrderBasic
 # 注册页面
 @require_http_methods(['GET', 'POST'])
 def register(request):
@@ -90,7 +91,10 @@ def user(request):
 # 显示用户订单页面
 @login_requied
 def user_order(request):
-    return render(request, 'user_center_order.html', {'page': 'order'})
+    passprot_id = request.session.get('possport_id')
+    # 根据用户id查询所有订单信息
+    order_basic_list = OrderBasic.objects_logic.get_order_basic_list_by_passprot(passprot_id=passprot_id)
+    return render(request, 'user_center_order.html', {'page': 'order','order_basic_list':order_basic_list})
 
 
 # 显示用户收货地址
