@@ -2,7 +2,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_http_methods
-
+from django.core.paginator import Paginator
 from models import *
 from utils.get_hash import get_hash
 from utils.decorators import login_requied
@@ -90,11 +90,26 @@ def user(request):
 
 # 显示用户订单页面
 @login_requied
-def user_order(request):
+def user_order(request,page_index):
     passprot_id = request.session.get('possport_id')
     # 根据用户id查询所有订单信息
     order_basic_list = OrderBasic.objects_logic.get_order_basic_list_by_passprot(passprot_id=passprot_id)
-    return render(request, 'user_center_order.html', {'page': 'order','order_basic_list':order_basic_list})
+    # 分页
+    page_index = int(page_index)  # 当前页
+    page = Paginator(order_basic_list, 1)  # 每页1个
+    pages = page.num_pages  # 页面总数
+    if pages <= 5:  # 如果页面总数小于5
+        page_li = range(1, pages + 1)
+    elif page_index <= 3:  # 前三页
+        page_li = range(1, 6)
+    elif page_index >= pages - 2:  # 后三页
+        page_li = range(pages - 4, pages + 1)
+    else:  # 其他
+        page_li = range(page_index - 2, page_index + 3)
+    # page_li = page.page_range    # 返回页码列表[ ]
+    order_basic_list = page.page(page_index)  # 第几页的数据
+    return render(request, 'user_center_order.html', {'page': 'order','order_basic_list':order_basic_list,
+                                                      'pages':page_li})
 
 
 # 显示用户收货地址

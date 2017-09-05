@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^check_user_name_exist/$', views.check_user_name_exist),  # 用户名占用验证
     url(r'^login_check/$', views.login_check),  # 登录验证
     url(r'^$', views.user),  # 显示用户中心
-    url(r'^order/$', views.user_order),  # 显示用户订单
+    url(r'^order/(?P<page_index>\d*)/$', views.user_order),  # 显示用户订单
     url(r'^address/$', views.user_addr),  # 显示用户收货地址
     url(r'^logout/$', views.logout),  # 退出登录
 
